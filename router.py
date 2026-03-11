@@ -6,7 +6,7 @@ FIRST_PACKET = 0
 def main():
     while(True):
         packet = sniff(iface = "enp0s8", count=1)
-    p = packet[FIRST_PACKET]
+        p = packet[FIRST_PACKET]
         sendp(p, iface = "enp0s9")
 
 
