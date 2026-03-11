@@ -3,8 +3,11 @@ from scapy.all import *
 FIRST_PACKET = 0
 OUT_MAC = '08:00:27:9a:ce:39'
 OUT_IP = '192.168.240.4'
-OUT_IFACE = "enp0s8"
-IN_IFACE = "enp0s9"
+OUT_IFACE = "enp0s9"
+IN_IFACE = "enp0s8"
+BAD_PORT = 12345
+
+
 def main():
     nat_table = []
     while(True):
@@ -13,7 +16,16 @@ def main():
         if p.sniffed_on == IN_IFACE:
             send_packet_out(p, nat_table)
         elif p.sniffed_on == OUT_IFACE:
-            send_packet_in(p, nat_table)    
+            if not check_if_bad_packet(p):      
+                send_packet_in(p, nat_table)
+
+
+def check_if_bad_packet(packet):
+    if UDP in packet:
+        if packet[UDP].sport == BAD_PORT:
+            return True
+    return False
+   
 
 def send_packet_out(p, nat_table):
     nat_line = NatTableLine(p)
@@ -57,9 +69,11 @@ class NatTableLine:
             self.dport = p[UDP].dport
         if TCP in p:
             self.sport = p[TCP].sport
-            self.dport = p[TCP].dport 
+            self.dport = p[TCP].dport
+
     def my_print(self):
         print(self.src_mac, self.dst_mac, self.src_ip, self.dst_ip, self.sport, self.dport)
 
+        
 if __name__ == "__main__":
     main();
